@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "897953693923",
+    "project_id": "social-media-app-998d9",
+    "storage_bucket": "social-media-app-998d9.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:897953693923:android:0f6ab281607e4d917d85d6",
+        "android_client_info": {
+          "package_name": "com.example.say_hello_to_world"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "897953693923-lhp5h8ga6fep6uehje639kj1q20l330l.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB7kVLgEiMpVLDGAptQiKIGnJ_DSwrCUUw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "897953693923-lhp5h8ga6fep6uehje639kj1q20l330l.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
