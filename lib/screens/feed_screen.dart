@@ -1,9 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-
 import 'package:flutter/cupertino.dart';
-
 import '../utils/dimensions.dart';
+import '../widgets/post_card.dart';
+
+
 class FeedScreen extends StatelessWidget {
   const FeedScreen({Key? key}) : super(key: key);
 
@@ -51,9 +52,9 @@ class FeedScreen extends StatelessWidget {
                 horizontal: width > webScreenSize ? width * 0.3 : 0,
                 vertical: width > webScreenSize ? 15 : 0,
               ),
-              child: PostCard(
-                snap: snapshot.data!.docs[index].data(),
-              ),
+              // child: PostCard(
+              //   //snap: snapshot.data!.docs[index].data(),
+              // ),
             ),
           );
         },

@@ -1,85 +1,82 @@
-import 'package:flutter/foundation.dart';
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
-import 'package:say_hello_to_world/models/userModel.dart';
-import 'package:say_hello_to_world/providers/user_provider.dart';
-import 'package:say_hello_to_world/utils/utils.dart';
-import 'dart:typed_data';
-import 'package:say_hello_to_world/resources/firestore_methods.dart';
 
+import '../providers/user_provider.dart';
 import '../resources/firestore_methods.dart';
-
+import '../utils/utils.dart';
 
 class ToPost extends StatefulWidget {
   const ToPost({Key? key}) : super(key: key);
 
   @override
-  State<ToPost> createState() => _ToPostState();
+  _ToPostState createState() => _ToPostState();
 }
 
 class _ToPostState extends State<ToPost> {
   Uint8List? _file;
-  bool _loading = false;
-  final _inscriptionController = TextEditingController();
+  bool isLoading = false;
+  final TextEditingController _descriptionController = TextEditingController();
 
-
-  _selectImage(BuildContext context) async {
-    return showDialog(context: context, builder: (context) {
-      return SimpleDialog(
-
-        title: const Text("Make a Post"),
-        children: [SimpleDialogOption(
-          padding: EdgeInsets.all(21),
-          child: Text("Take Photo"),
-          onPressed: () async {
-            Navigator.of(context).pop();
-            Uint8List file = await pickImage(ImageSource.camera);
-            setState(() {
-              _file = file;
-            });
-          },
-        ),
-          SimpleDialogOption(
-            padding: EdgeInsets.all(21),
-            child: Text("Choose image from gallery"),
-            onPressed: () async {
-              Navigator.of(context).pop();
-              Uint8List file = await pickImage(ImageSource.gallery);
-              setState(() {
-                _file = file;
-              });
-            },
-          ),
-          SimpleDialogOption(
-            padding: EdgeInsets.all(21),
-            child: Text("Cancel"),
-            onPressed: () {
-              Navigator.of(context).pop();
-            },
-          )
-        ],
-      );
-    });
+  _selectImage(BuildContext parentContext) async {
+    return showDialog(
+      context: parentContext,
+      builder: (BuildContext context) {
+        return SimpleDialog(
+          title: const Text('Create a Post'),
+          children: <Widget>[
+            SimpleDialogOption(
+                padding: const EdgeInsets.all(20),
+                child: const Text('Take a photo'),
+                onPressed: () async {
+                  Navigator.pop(context);
+                  Uint8List file = await pickImage(ImageSource.camera);
+                  setState(() {
+                    _file = file;
+                  });
+                }),
+            SimpleDialogOption(
+                padding: const EdgeInsets.all(20),
+                child: const Text('Choose from Gallery'),
+                onPressed: () async {
+                  Navigator.of(context).pop();
+                  Uint8List file = await pickImage(ImageSource.gallery);
+                  setState(() {
+                    _file = file;
+                  });
+                }),
+            SimpleDialogOption(
+              padding: const EdgeInsets.all(20),
+              child: const Text("Cancel"),
+              onPressed: () {
+                Navigator.pop(context);
+              },
+            )
+          ],
+        );
+      },
+    );
   }
 
-  void postImage(String userId, String name, String profImage) async {
+  void postImage(String uid, String username, String profImage) async {
     setState(() {
-      _loading = true;
+      isLoading = true;
     });
     // start the loading
     try {
       // upload to storage and db
       String res = await FireStoreMethods().uploadPost(
-        _inscriptionController.text,
+        _descriptionController.text,
         _file!,
-        userId,
-        name,
+        uid,
+        username,
         profImage,
       );
       if (res == "success") {
         setState(() {
-          _loading = false;
+          isLoading = false;
         });
         showSnackBar(
           context,
@@ -91,7 +88,7 @@ class _ToPostState extends State<ToPost> {
       }
     } catch (err) {
       setState(() {
-        _loading = false;
+        isLoading = false;
       });
       showSnackBar(
         context,
@@ -109,106 +106,97 @@ class _ToPostState extends State<ToPost> {
   @override
   void dispose() {
     super.dispose();
-    _inscriptionController.dispose();
+    _descriptionController.dispose();
   }
-
 
   @override
   Widget build(BuildContext context) {
-    final User user = Provider
-        .of<UserProvider>(context)
-        .getUser;
+    final UserProvider userProvider = Provider.of<UserProvider>(context);
+
     return _file == null
         ? Center(
       child: IconButton(
-        icon: Icon(Icons.upload),
+        icon: const Icon(
+          Icons.upload,
+        ),
         onPressed: () => _selectImage(context),
       ),
     )
         : Scaffold(
       appBar: AppBar(
-          backgroundColor: Colors.deepPurple,
-          leading: IconButton(
-            icon: Icon(Icons.arrow_back_ios),
-            onPressed: () =>clearImage,
-          ),
-          title: Text("New Post"),
-          actions: [
-            IconButton(
-              onPressed: () =>
-                  postImage(
-                    user.uid,
-                    user.name,
-                    user.photoUrl,
-                  ),
-              icon: Icon(Icons.check_circle),
-
-
-              color: Colors.white,
-              iconSize: 32,
+        backgroundColor: Colors.transparent,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: clearImage,
+        ),
+        title: const Text(
+          'Post to',
+        ),
+        centerTitle: false,
+        actions: <Widget>[
+          TextButton(
+            onPressed: () => postImage(
+              userProvider.getUser.uid,
+              userProvider.getUser.name,
+              userProvider.getUser.photoUrl,
             ),
-          ]
+            child: const Text(
+              "Post",
+              style: TextStyle(
+                  color: Colors.blueAccent,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16.0),
+            ),
+          )
+        ],
       ),
+      // POST FORM
       body: Column(
-        children: [
-          _loading? const LinearProgressIndicator()
-          :const Padding(
-            padding: EdgeInsets.only(top:0),
-          ),
+        children: <Widget>[
+          isLoading
+              ? const LinearProgressIndicator()
+              : const Padding(padding: EdgeInsets.only(top: 0.0)),
           const Divider(),
-
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
+            children: <Widget>[
               CircleAvatar(
-                backgroundImage: NetworkImage(user.photoUrl),
-                radius: 32,
-
-
-              ),
-              SizedBox(
-                width: MediaQuery
-                    .of(context)
-                    .size
-                    .width * 0.3,
-                child: TextField(
-                  controller: _inscriptionController,
-                  decoration: InputDecoration(
-                    hintText: "Write inscription....",
-                    border: InputBorder.none,
-
-                  ),
-
-                  maxLines: 5,
-
+                backgroundImage: NetworkImage(
+                  userProvider.getUser.photoUrl,
                 ),
-
               ),
-              Divider(),
               SizedBox(
-                height: 45,
-                width: 45,
+                width: MediaQuery.of(context).size.width * 0.3,
+                child: TextField(
+                  controller: _descriptionController,
+                  decoration: const InputDecoration(
+                      hintText: "Write a caption...",
+                      border: InputBorder.none),
+                  maxLines: 8,
+                ),
+              ),
+              SizedBox(
+                height: 45.0,
+                width: 45.0,
                 child: AspectRatio(
                   aspectRatio: 487 / 451,
                   child: Container(
                     decoration: BoxDecoration(
-                      image: DecorationImage(
-                          image: MemoryImage(_file!),
+                        image: DecorationImage(
                           fit: BoxFit.fill,
-                          alignment: FractionalOffset.topCenter),
-
-                    ),
+                          alignment: FractionalOffset.topCenter,
+                          image: MemoryImage(_file!),
+                        )),
                   ),
                 ),
-              )
+              ),
             ],
-          )
+          ),
+          const Divider(),
         ],
-
       ),
-
-
     );
   }
 }
+
